@@ -1,6 +1,10 @@
 package com.tms.controller;
 
 import com.tms.service.FileService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
@@ -21,6 +25,7 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/file")
+@Tag(name = "File Controller", description = "File Management")
 public class FileController {
 
     private FileService fileService;
@@ -36,8 +41,11 @@ public class FileController {
         return new ResponseEntity<>(result ? HttpStatus.CREATED : HttpStatus.CONFLICT);
     }
 
+    @Operation(summary = "Get file by name", description = "Return file by name")
+    @ApiResponse(responseCode = "200", description = "File was been found")
+    @ApiResponse(responseCode = "404", description = "File not found")
     @GetMapping("/{filename}")
-    public ResponseEntity<Resource> getFile(@PathVariable String filename) {
+    public ResponseEntity<Resource> getFile(@PathVariable("filename") @Parameter(name = "filename") String filename) {
         Optional<Resource> resource = fileService.getFile(filename);
         if (resource.isPresent()) {
             HttpHeaders headers = new HttpHeaders();
@@ -47,6 +55,9 @@ public class FileController {
         return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 
+    @Operation(summary = "Get files by name", description = "Return files by name")
+    @ApiResponse(responseCode = "200", description = "File was been found")
+    @ApiResponse(responseCode = "404", description = "Files not found")
     @GetMapping
     public ResponseEntity<ArrayList<String>> getListOfFiles() {
         ArrayList<String> files;
@@ -62,8 +73,11 @@ public class FileController {
         return new ResponseEntity<>(files, HttpStatus.OK);
     }
 
+    @Operation(summary = "Removing file by name", description = "Removing file by name")
+    @ApiResponse(responseCode = "204", description = "File was been deleted")
+    @ApiResponse(responseCode = "404", description = "Conflict: File not deleted")
     @DeleteMapping("/{filename}")
-    public ResponseEntity<HttpStatus> deleteFile(@PathVariable("filename") String filename) {
+    public ResponseEntity<HttpStatus> deleteFile(@PathVariable("filename") @Parameter(name = "filename") String filename) {
         Boolean result = fileService.deleteFile(filename);
         return new ResponseEntity<>(result ? HttpStatus.NO_CONTENT : HttpStatus.CONFLICT);
     }
